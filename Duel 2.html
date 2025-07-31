@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duel des Maillots - Yamal vs Mbappé</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --barcelona-color: #A50044;
+            --barcelona-secondary: #004D98;
+            --madrid-color: #FFFFFF;
+            --madrid-secondary: #00529F;
+            --neutral-color: #2A2A2A;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            scroll-behavior: smooth;
+            color: #333;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--barcelona-color) 0%, var(--madrid-secondary) 100%);
+            min-height: 80vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .barcelona-section {
+            background: linear-gradient(to bottom, #A50044 0%, #004D98 100%);
+            color: white;
+        }
+        
+        .madrid-section {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #00529F 100%);
+            color: #333;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        
+        .stats-card {
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .jersey-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .jersey-card:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transform: translateY(-10px);
+        }
+        
+        .btn-barcelona {
+            background-color: var(--barcelona-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-barcelona:hover {
+            background-color: var(--barcelona-secondary);
+            transform: translateY(-3px);
+        }
+        
+        .btn-madrid {
+            background-color: var(--madrid-secondary);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-madrid:hover {
+            background-color: #003366;
+            transform: translateY(-3px);
+        }
+        
+        .player-highlight {
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+        }
+        
+        .player-highlight img {
+            transition: transform 0.5s ease;
+        }
+        
+        .player-highlight:hover img {
+            transform: scale(1.05);
+        }
+        
+        .poll-option {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .poll-option:hover {
+            transform: translateY(-5px);
+        }
+        
+        .poll-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        }
+        
+        .tab-selector {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-selector.active {
+            border-color: #FFD700;
+            color: #FFD700;
+        }
+
+        .size-guide td, .size-guide th {
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 12px;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #FFD700;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .testimonial-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                min-height: 60vh;
+            }
+        }
+        
+        .section {
+            scroll-margin-top: 80px;
+        }
+
+        .comparison-bar {
+            height: 20px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            background: #e0e0e0;
+        }
+        
+        .comparison-bar-inner {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 1s ease;
+        }
+        
+        #pollResults {
+            transition: all 0.5s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        #pollResults.show {
+            max-height: 500px;
+        }
+        
+        .vote-count {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .stat-comparison {
+            margin-bottom: 15px;
+        }
+        
+        .percentage-label {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: white;
+            text-shadow: 0 0 3px rgba(0,0,0,0.7);
+        }
+        
+        .yamal-label {
+            left: 5px;
+        }
+        
+        .mbappe-label {
+            right: 5px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="fixed top-0 w-full z-50 bg-neutral-900 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-xl md:text-2xl font-bold text-yellow-400"><i class="fas fa-trophy mr-2"></i>DUEL DES MAILLOTS</h1>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#accueil" class="nav-link py-2 active">Accueil</a>
+                <a href="#team-yamal" class="nav-link py-2">Team Yamal</a>
+                <a href="#team-mbappe" class="nav-link py-2">Team Mbappé</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-btn" class="text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-neutral-900 pb-4 px-4">
+            <a href="#accueil" class="block py-2 px-4 text-white hover:bg-gray-800 rounded">Accueil</a>
+            <a href="#team-yamal" class="block py-2 px-4 text-white hover:bg-gray-800 rounded">Team Yamal</a>
+            <a href="#team-mbappe" class="block py-2 px-4 text-white hover:bg-gray-800 rounded">Team Mbappé</a>
+        </div>
+    </nav>
+
+    <section id="accueil" class="section pt-20">
+        <div class="hero-section flex items-center justify-center">
+            <div class="container mx-auto px-4 py-12 md:py-20">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="w-full md:w-1/2 text-white text-center md:text-left mb-8 md:mb-0">
+                        <h1 class="text-4xl md:text-6xl font-bold mb-6">La Rivalité Légendaire</h1>
+                        <p class="text-xl md:text-2xl mb-8">Barcelone vs Madrid. Yamal vs Mbappé. Choisissez votre camp et affichez vos couleurs !</p>
+                        <div class="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                            <a href="#team-yamal" class="btn-barcelona px-8 py-3 rounded-full font-bold text-lg shadow-lg">
+                                Team Yamal <i class="fas fa-angle-right ml-2"></i>
+                            </a>
+                            <a href="#team-mbappe" class="btn-madrid px-8 py-3 rounded-full font-bold text-lg shadow-lg">
+                                Team Mbappé <i class="fas fa-angle-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 flex justify-center">
+                        <div class="relative w-full max-w-md">
+                            <div class="absolute left-0 top-0 w-40 h-40 md:w-64 md:h-64 bg-barcelona-color rounded-full opacity-80 filter blur-xl animate-pulse"></div>
+                            <div class="absolute right-0 bottom-0 w-40 h-40 md:w-64 md:h-64 bg-madrid-secondary rounded-full opacity-80 filter blur-xl animate-pulse"></div>
+                            <div class="relative z-10 grid grid-cols-2 gap-4">
+                                <div class="player-highlight bg-white rounded-xl shadow-2xl overflow-hidden">
+                                    <img src="https://foot-star.com/wp-content/uploads/2024/08/Maillot-Kit-Enfant-Barca-2024-2025-Domicile-Lamine-Yamal-.jpg" alt="Lamine Yamal Maillot" class="w-full h-auto">
+                                </div>
+                                <div class="player-highlight bg-white rounded-xl shadow-2xl overflow-hidden">
+                                    <img src="https://foot-star.com/wp-content/uploads/2024/07/Maillot-Real-Madrid-Exterieur-2024-2025-Mbappe.jpg" alt="Kylian Mbappé Maillot" class="w-full h-auto">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 text-white py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Qui est le meilleur ? <span class="text-yellow-400">Votez !</span></h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="poll-option rounded-xl overflow-hidden shadow-2xl" data-player="yamal">
+                        <img src="https://footsoccerpro.co/wp-content/uploads/2024/07/Maillot-Barca-2024-2025-Domicile-Lamine-Yamal-1-1.jpg" alt="Lamine Yamal" class="w-full h-auto">
+                        <div class="poll-overlay">
+                            <h3 class="text-2xl font-bold text-white">Lamine Yamal</h3>
+                            <p class="text-gray-300">Le prodige du FC Barcelone</p>
+                        </div>
+                    </div>
+                    
+                    <div class="poll-option rounded-xl overflow-hidden shadow-2xl" data-player="mbappe">
+                        <img src="https://www.futbolemotion.com/imagesarticulos/245490/grandes/camiseta-adidas-real-madrid-primera-equipacion-2024-2025-white-0.webp" alt="Kylian Mbappé" class="w-full h-auto">
+                        <div class="poll-overlay">
+                            <h3 class="text-2xl font-bold text-white">Kylian Mbappé</h3>
+                            <p class="text-gray-300">La superstar du Real Madrid</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="pollResults" class="mt-8 bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4">Résultats du sondage</h3>
+                    
+                    <div class="stat-comparison">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-semibold">Lamine Yamal</span>
+                            <span class="font-semibold">Kylian Mbappé</span>
+                        </div>
+                        <div class="comparison-bar">
+                            <div class="comparison-bar-inner" style="width: 35%; background-color: var(--barcelona-color);">
+                                <span class="percentage-label yamal-label">35%</span>
+                            </div>
+                            <div class="comparison-bar-inner" style="width: 65%; left: 35%; background-color: var(--madrid-secondary);">
+                                <span class="percentage-label mbappe-label">65%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p><span id="totalVotes">1,245</span> votes au total</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Le Duel des Titans</h2>
+                <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Découvrez comment ces deux phénomènes du football se comparent en termes de performance, de style de jeu et d'impact sur leurs équipes respectives.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="stats-container shadow-lg rounded-xl overflow-hidden">
+                        <h3 class="text-xl font-bold bg-gray-800 text-white py-3 px-4">Statistiques 2024/2025</h3>
+                        <div class="p-4">
+                            <canvas id="statsChart" style="height: 400px;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-table shadow-lg rounded-xl overflow-hidden">
+                        <h3 class="text-xl font-bold bg-gray-800 text-white py-3 px-4">Face à Face</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left">Caractéristique</th>
+                                        <th class="py-3 px-4 text-center">Lamine Yamal</th>
+                                        <th class="py-3 px-4 text-center">Kylian Mbappé</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4 font-medium">Âge</td>
+                                        <td class="py-3 px-4 text-center">17 ans</td>
+                                        <td class="py-3 px-4 text-center">26 ans</td>
+                                    </tr>
+                                    <tr class="border-b bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Club</td>
+                                        <td class="py-3 px-4 text-center">FC Barcelone</td>
+                                        <td class="py-3 px-4 text-center">Real Madrid</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4 font-medium">Position principale</td>
+                                        <td class="py-3 px-4 text-center">Ailier droit</td>
+                                        <td class="py-3 px-4 text-center">Avant-centre</td>
+                                    </tr>
+                                    <tr class="border-b bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Buts en championnat 2024/25</td>
+                                        <td class="py-3 px-4 text-center">9</td>
+                                        <td class="py-3 px-4 text-center">31</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4 font-medium">Passes décisives 2024/25</td>
+                                        <td class="py-3 px-4 text-center">13</td>
+                                        <td class="py-3 px-4 text-center">3</td>
+                                    </tr>
+                                    <tr class="border-b bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Style de jeu</td>
+                                        <td class="py-3 px-4 text-center">Technique, créatif</td>
+                                        <td class="py-3 px-4 text-center">Rapide, puissant</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="py-3 px-4 font-medium">Numéro de maillot</td>
+                                        <td class="py-3 px-4 text-center">10</td>
+                                        <td class="py-3 px-4 text-center">10</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="team-yamal" class="section barcelona-section py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Team Lamine Yamal</h2>
+                <p class="text-xl opacity-90 max-w-3xl mx-auto">Le prodige du FC Barcelone qui révolutionne le football à seulement 17 ans</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                <div>
+                    <div class="bg-white rounded-xl overflow-hidden shadow-2xl mb-6">
+                        <img src="https://footsoccerpro.co/wp-content/uploads/2024/07/Maillot-Barca-2024-2025-Domicile-Lamine-Yamal-1-1.jpg" alt="Lamine Yamal Maillot Domicile" class="w-full h-auto">
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white rounded-lg overflow-hidden">
+                            <img src="https://foot-star.com/wp-content/uploads/2025/05/Maillot-Match-Barca-2024-2025-Exterieur-Lamine-Yamal-.jpg" alt="Lamine Yamal Maillot Extérieur" class="w-full h-auto">
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden">
+                            <img src="https://foot-star.com/wp-content/uploads/2024/08/Maillot-Kit-Enfant-Barca-2024-2025-Domicile-Lamine-Yamal-.jpg" alt="Lamine Yamal Maillot Junior" class="w-full h-auto">
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden">
+                            <img src="https://static.wixstatic.com/media/577107_e1887100e5c747698d8e6e87c75bfbe5~mv2.webp/v1/fill/w_900,h_900,al_c,q_85,enc_avif,quality_auto/577107_e1887100e5c747698d8e6e87c75bfbe5~mv2.webp" alt="Maillot Yamal Encadré" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="jersey-card bg-white bg-opacity-10 backdrop-blur-lg shadow-xl p-6 mb-8 rounded-xl">
+                        <h3 class="text-2xl font-bold mb-2">Maillot Officiel FC Barcelone 2025/26</h3>
+                        <h4 class="text-xl font-bold mb-4">LAMINE YAMAL #10</h4>
+                        
+                        <div class="flex items-center mb-6">
+                            <span class="text-3xl font-bold mr-4">89,99€</span>
+                            <span class="text-lg line-through opacity-70">99,99€</span>
+                            <span class="ml-3 bg-green-500 text-white text-sm px-2 py-1 rounded">-10%</span>
+                        </div>
+                        
+                        <p class="mb-6">Maillot domicile 2025/26 du FC Barcelone, qualité Stadium. Conçu avec les emblématiques bandes blaugrana et un effet dégradé dans les rayures. Flocage officiel YAMAL 10.</p>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-2">Taille:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded">S</button>
+                                <button class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded">M</button>
+                                <button class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded">L</button>
+                                <button class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded">XL</button>
+                                <button class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded">XXL</button>
+                            </div>
+                        </div>
+                        
+                        <a href="https://store.fcbarcelona.com/fr/products/fcbarcelona-home-kit-lamine-yamal-pp" target="_blank" class="btn-barcelona block text-center py-3 px-6 rounded-full font-bold text-lg shadow-lg">
+                            Acheter Maintenant <i class="fas fa-shopping-cart ml-2"></i>
+                        </a>
+                        
+                        <div class="mt-4 text-sm opacity-80 text-center">
+                            <i class="fas fa-shield-alt mr-1"></i> Produit 100% officiel - <i class="fas fa-truck mr-1"></i> Livraison rapide
+                        </div>
+                    </div>
+                    
+                    <div class="size-guide bg-white bg-opacity-10 backdrop-blur-lg shadow-xl rounded-xl overflow-hidden">
+                        <h4 class="bg-barcelona-color p-3 font-bold">Guide des tailles</h4>
+                        <div class="p-4 overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Taille</th>
+                                        <th class="text-center">Poitrine (cm)</th>
+                                        <th class="text-center">Longueur (cm)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>S</td>
+                                        <td class="text-center">88-96</td>
+                                        <td class="text-center">71</td>
+                                    </tr>
+                                    <tr>
+                                        <td>M</td>
+                                        <td class="text-center">96-104</td>
+                                        <td class="text-center">74</td>
+                                    </tr>
+                                    <tr>
+                                        <td>L</td>
+                                        <td class="text-center">104-112</td>
+                                        <td class="text-center">77</td>
+                                    </tr>
+                                    <tr>
+                                        <td>XL</td>
+                                        <td class="text-center">112-124</td>
+                                        <td class="text-center">81</td>
+                                    </tr>
+                                    <tr>
+                                        <td>XXL</td>
+                                        <td class="text-center">124-136</td>
+                                        <td class="text-center">85</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                <div class="stats-card">
+                    <h3 class="text-2xl font-bold mb-6">Statistiques 2024/2025</h3>
+                    <div class="mb-6">
+                        <canvas id="yamalStatsChart" style="height: 300px;"></canvas>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2">35</div>
+                            <div class="text-sm opacity-80">Matchs en Liga</div>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2">9</div>
+                            <div class="text-sm opacity-80">Buts marqués</div>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2">13</div>
+                            <div class="text-sm opacity-80">Passes décisives</div>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2">2864</div>
+                            <div class="text-sm opacity-80">Minutes jouées</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <h3 class="text-2xl font-bold mb-6">Profil du Joueur</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <p><strong>Nom complet:</strong> Lamine Yamal Nasraoui Ebana</p>
+                            <p><strong>Date de naissance:</strong> 13 juillet 2007</p>
+                            <p><strong>Lieu de naissance:</strong> Esplugues de Llobregat, Espagne</p>
+                            <p><strong>Nationalité:</strong> Espagnole</p>
+                        </div>
+                        <div>
+                            <p><strong>Taille:</strong> 180 cm</p>
+                            <p><strong>Poids:</strong> 70 kg</p>
+                            <p><strong>Pied préféré:</strong> Gauche</p>
+                            <p><strong>Position:</strong> Ailier droit</p>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-lg font-bold mb-2">Récompenses</h4>
+                    <ul class="list-disc pl-5 mb-4">
+                        <li>Golden Boy 2024</li>
+                        <li>Trophée Laureus - Révélation mondiale</li>
+                        <li>Plus jeune buteur de l'histoire de la Liga</li>
+                        <li>Plus jeune buteur de la Ligue des Champions</li>
+                        <li>Plus jeune buteur de l'histoire de l'Euro</li>
+                    </ul>
+                    
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-white bg-opacity-20 hover:bg-opacity-30 py-2 px-4 rounded-full inline-flex items-center">
+                            <i class="fab fa-youtube mr-2 text-red-500"></i> Voir ses meilleurs moments
+                        </a>
+                        <a href="#" class="bg-white bg-opacity-20 hover:bg-opacity-30 py-2 px-4 rounded-full inline-flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i> Plus d'infos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonials mb-8">
+                <h3 class="text-2xl font-bold mb-6 text-center">Ce que disent les fans</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="testimonial-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 mr-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="text-sm opacity-80">5.0/5</div>
+                        </div>
+                        <p class="italic mb-4">"J'adore ce maillot de Yamal ! La qualité est exceptionnelle et le design blaugrana est magnifique. Mon fils ne le quitte plus !"</p>
+                        <div class="text-sm font-bold">Marc D., Barcelone</div>
+                    </div>
+                    
+                    <div class="testimonial-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 mr-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div class="text-sm opacity-80">4.5/5</div>
+                        </div>
+                        <p class="italic mb-4">"Livraison rapide et produit authentique. Le flocage est parfait. Je suis fier de porter le maillot de notre futur Ballon d'Or !"</p>
+                        <div class="text-sm font-bold">Sophie L., Lyon</div>
+                    </div>
+                    
+                    <div class="testimonial-card p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 mr-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="text-sm opacity-80">5.0/5</div>
+                        </div>
+                        <p class="italic mb-4">"La taille est parfaite et le matériau très confortable. Le numéro 10 mythique porté par un joueur qui marquera l'histoire !"</p>
+                        <div class="text-sm font-bold">Thomas G., Paris</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="https://store.fcbarcelona.com/fr/products/fcbarcelona-home-kit-lamine-yamal-pp" target="_blank" class="btn-barcelona inline-block py-3 px-10 rounded-full font-bold text-xl shadow-xl">
+                    Je choisis Team Yamal <i class="fas fa-chevron-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <section id="team-mbappe" class="section madrid-section py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-madrid-secondary">Team Kylian Mbappé</h2>
+                <p class="text-xl opacity-90 max-w-3xl mx-auto text-gray-700">La superstar mondiale qui illumine le Santiago Bernabéu avec ses exploits</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                <div>
+                    <div class="bg-white rounded-xl overflow-hidden shadow-2xl mb-6">
+                        <img src="https://www.voetbalshop.be/media/catalog/product/cache/d81c8dc66c69ceb69419c2e7e72e896d/2/8/284736_adidas-real-madrid-thuisshirt-2024-2025-mbappe-9_1.jpg" alt="Kylian Mbappé Maillot Domicile" class="w-full h-auto">
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white rounded-lg overflow-hidden">
+                            <img src="https://foot-star.com/wp-content/uploads/2024/07/Maillot-Real-Madrid-Exterieur-2024-2025-Mbappe.jpg" alt="Kylian Mbappé Maillot Extérieur" class="w-full h-auto">
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden">
+                            <img src="https://foot-star.com/wp-content/uploads/2024/08/Maillot-Real-Madrid-Third-2024-2025-Mbappe.jpg" alt="Kylian Mbappé Maillot Third" class="w-full h-auto">
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden">
+                            <img src="https://static.wixstatic.com/media/577107_fa4525702daf4247a29f94c11b330df6~mv2.webp/v1/fill/w_480,h_480,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/577107_fa4525702daf4247a29f94c11b330df6~mv2.webp" alt="Maillot Mbappé Encadré" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="jersey-card bg-white shadow-xl p-6 mb-8 rounded-xl">
+                        <h3 class="text-2xl font-bold mb-2 text-madrid-secondary">Maillot Officiel Real Madrid 2025/26</h3>
+                        <h4 class="text-xl font-bold mb-4 text-gray-700">MBAPPÉ #10</h4>
+                        
+                        <div class="flex items-center mb-6">
+                            <span class="text-3xl font-bold mr-4 text-gray-800">94,99€</span>
+                            <span class="text-lg line-through opacity-70">119,99€</span>
+                            <span class="ml-3 bg-green-500 text-white text-sm px-2 py-1 rounded">-21%</span>
+                        </div>
+                        
+                        <p class="mb-6 text-gray-600">Maillot domicile 2025/26 du Real Madrid. Design élégant en blanc emblématique avec détails dorés. Technologie AEROREADY qui évacue la transpiration. Flocage officiel MBAPPÉ 10.</p>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-2 text-gray-700">Taille:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-gray-700">S</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-gray-700">M</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-gray-700">L</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-gray-700">XL</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-gray-700">XXL</button>
+                            </div>
+                        </div>
+                        
+                        <a href="https://shop.realmadrid.com/fr-fr/product/rmcfmz0239-mens-mbappe-home-shirt-24-25-white" target="_blank" class="btn-madrid block text-center py-3 px-6 rounded-full font-bold text-lg shadow-lg">
+                            Acheter Maintenant <i class="fas fa-shopping-cart ml-2"></i>
+                        </a>
+                        
+                        <div class="mt-4 text-sm text-gray-600 text-center">
+                            <i class="fas fa-shield-alt mr-1"></i> Produit 100% officiel - <i class="fas fa-truck mr-1"></i> Livraison rapide
+                        </div>
+                    </div>
+                    
+                    <div class="size-guide bg-white shadow-xl rounded-xl overflow-hidden">
+                        <h4 class="bg-madrid-secondary p-3 font-bold text-white">Guide des tailles</h4>
+                        <div class="p-4 overflow-x-auto">
+                            <table class="w-full text-sm text-gray-700">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Taille</th>
+                                        <th class="text-center">Poitrine (cm)</th>
+                                        <th class="text-center">Longueur (cm)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>S</td>
+                                        <td class="text-center">88-96</td>
+                                        <td class="text-center">73</td>
+                                    </tr>
+                                    <tr>
+                                        <td>M</td>
+                                        <td class="text-center">96-104</td>
+                                        <td class="text-center">75</td>
+                                    </tr>
+                                    <tr>
+                                        <td>L</td>
+                                        <td class="text-center">104-112</td>
+                                        <td class="text-center">77</td>
+                                    </tr>
+                                    <tr>
+                                        <td>XL</td>
+                                        <td class="text-center">112-124</td>
+                                        <td class="text-center">79</td>
+                                    </tr>
+                                    <tr>
+                                        <td>XXL</td>
+                                        <td class="text-center">124-136</td>
+                                        <td class="text-center">81</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                <div class="stats-card bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold mb-6 text-madrid-secondary">Statistiques 2024/2025</h3>
+                    <div class="mb-6">
+                        <canvas id="mbappeStatsChart" style="height: 300px;"></canvas>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-madrid-secondary bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2 text-madrid-secondary">34</div>
+                            <div class="text-sm text-gray-600">Matchs en Liga</div>
+                        </div>
+                        <div class="bg-madrid-secondary bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2 text-madrid-secondary">31</div>
+                            <div class="text-sm text-gray-600">Buts marqués</div>
+                        </div>
+                        <div class="bg-madrid-secondary bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2 text-madrid-secondary">3</div>
+                            <div class="text-sm text-gray-600">Passes décisives</div>
+                        </div>
+                        <div class="bg-madrid-secondary bg-opacity-10 p-4 rounded-lg">
+                            <div class="text-4xl font-bold mb-2 text-madrid-secondary">2</div>
+                            <div class="text-sm text-gray-600">Triplés</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold mb-6 text-madrid-secondary">Profil du Joueur</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6 text-gray-700">
+                        <div>
+                            <p><strong>Nom complet:</strong> Kylian Mbappé Lottin</p>
+                            <p><strong>Date de naissance:</strong> 20 décembre 1998</p>
+                            <p><strong>Lieu de naissance:</strong> Paris, France</p>
+                            <p><strong>Nationalité:</strong> Française</p>
+                        </div>
+                        <div>
+                            <p><strong>Taille:</strong> 178 cm</p>
+                            <p><strong>Poids:</strong> 73 kg</p>
+                            <p><strong>Pied préféré:</strong> Droit</p>
+                            <p><strong>Position:</strong> Attaquant</p>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-lg font-bold mb-2 text-madrid-secondary">Palmarès</h4>
+                    <ul class="list-disc pl-5 mb-4 text-gray-700">
+                        <li>Champion du Monde 2018 avec la France</li>
+                        <li>Meilleur buteur de Ligue 1 (5 fois)</li>
+                        <li>Vainqueur de la Ligue des Nations 2021</li>
+                        <li>Ligue 1 (5 fois)</li>
+                        <li>Coupe de France (3 fois)</li>
+                    </ul>
+                    
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-madrid-secondary text-white py-2 px-4 rounded-full inline-flex items-center hover:bg-opacity-90">
+                            <i class="fab fa-youtube mr-2"></i> Voir ses meilleurs moments
+                        </a>
+                        <a href="#" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-full inline-flex items-center hover:bg-gray-300">
+                            <i class="fas fa-info-circle mr-2"></i> Plus d'infos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonials mb-8">
+                <h3 class="text-2xl font-bold mb-6 text-center text-madrid-secondary">Ce que disent les fans</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="testimonial-card bg-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 mr-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="text-sm text-gray-500">5.0/5</div>
+                        </div>
+                        <p class="italic mb-4 text-gray-600">"Enfin un maillot du Real avec Mbappé ! La qualité est au rendez-vous et le design est élégant. Hala Madrid !"</p>
+                        <div class="text-sm font-bold text-gray-700">Carlos R., Madrid</div>
+                    </div>
+                    
+                    <div class="testimonial-card bg-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 mr-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="text-sm text-gray-500">5.0/5</div>
+                        </div>
+                        <p class="italic mb-4 text-gray-600">"Ce maillot est magnifique ! Le numéro 10 de Mbappé est parfaitement flocage. Je le porte avec fierté à chaque match !"</p>
+                        <div class="text-sm font-bold text-gray-700">Julien M., Marseille</div>
+                    </div>
+                    
+                    <div class="testimonial-card bg-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 mr-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div class="text-sm text-gray-500">4.5/5</div>
+                        </div>
+                        <p class="italic mb-4 text-gray-600">"Livraison ultra rapide et maillot authentique. Le tissu est respirant et confortable. Mon fils adore son nouveau maillot de Mbappé !"</p>
+                        <div class="text-sm font-bold text-gray-700">Antoine L., Bordeaux</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="https://shop.realmadrid.com/fr-fr/product/rmcfmz0239-mens-mbappe-home-shirt-24-25-white" target="_blank" class="btn-madrid inline-block py-3 px-10 rounded-full font-bold text-xl shadow-xl">
+                    Je choisis Team Mbappé <i class="fas fa-chevron-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="bg-neutral-900 text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Duel des Maillots</h3>
+                    <p class="text-gray-400 mb-4">Votre destination pour les maillots officiels de Lamine Yamal et Kylian Mbappé. Exprimez votre passion avec style !</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Liens Rapides</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#accueil" class="text-gray-400 hover:text-white">Accueil</a></li>
+                        <li><a href="#team-yamal" class="text-gray-400 hover:text-white">Team Yamal</a></li>
+                        <li><a href="#team-mbappe" class="text-gray-400 hover:text-white">Team Mbappé</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Guide des tailles</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Aide & Support</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Livraison</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Retours</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Suivi de commande</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Inscrivez-vous pour recevoir nos offres exclusives et les dernières actualités sur vos joueurs préférés.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Votre email" class="bg-gray-800 rounded-l px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                        <button class="bg-yellow-400 text-gray-900 font-bold rounded-r px-4 hover:bg-yellow-500">OK</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">© 2025 Duel des Maillots. Tous droits réservés.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Mentions légales</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Politique de confidentialité</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Conditions d'utilisation</a>
+                </div>
+            </div>
+            
+            <div class="text-center text-xs text-gray-600 mt-6">
+                <p>Ce site utilise des liens d'affiliation. En achetant via nos liens, vous soutenez notre site sans coût supplémentaire pour vous.</p>
+                <p class="mt-2">FC Barcelona et Real Madrid sont des marques déposées de leurs propriétaires respectifs.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Navigation Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Close mobile menu after click
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Poll Interaction
+        const pollOptions = document.querySelectorAll('.poll-option');
+        const pollResults = document.getElementById('pollResults');
+        
+        pollOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                pollResults.classList.add('show');
+                
+                // Animate results (just for demo)
+                setTimeout(() => {
+                    const yamalBar = document.querySelector('.comparison-bar-inner:first-child');
+                    const mbappeBar = document.querySelector('.comparison-bar-inner:last-child');
+                    
+                    if (option.dataset.player === 'yamal') {
+                        yamalBar.style.width = '38%';
+                        mbappeBar.style.width = '62%';
+                        document.querySelector('.yamal-label').textContent = '38%';
+                        document.querySelector('.mbappe-label').textContent = '62%';
+                        document.getElementById('totalVotes').textContent = '1,246';
+                    } else {
+                        yamalBar.style.width = '35%';
+                        mbappeBar.style.width = '65%';
+                        document.querySelector('.yamal-label').textContent = '35%';
+                        document.querySelector('.mbappe-label').textContent = '65%';
+                        document.getElementById('totalVotes').textContent = '1,247';
+                    }
+                }, 500);
+            });
+        });
+        
+        // Stats Chart
+        window.addEventListener('DOMContentLoaded', () => {
+            // Main comparison chart
+            const statsCtx = document.getElementById('statsChart').getContext('2d');
+            const statsChart = new Chart(statsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Buts', 'Passes Décisives', 'Dribbles Réussis', 'Tirs Cadrés', 'Précision de Passe', 'Duels Gagnés'],
+                    datasets: [
+                        {
+                            label: 'Lamine Yamal',
+                            data: [9, 13, 85, 47, 88, 52],
+                            backgroundColor: 'rgba(165, 0, 68, 0.2)',
+                            borderColor: 'rgba(165, 0, 68, 1)',
+                            pointBackgroundColor: 'rgba(165, 0, 68, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(165, 0, 68, 1)'
+                        },
+                        {
+                            label: 'Kylian Mbappé',
+                            data: [31, 3, 75, 80, 82, 61],
+                            backgroundColor: 'rgba(0, 82, 159, 0.2)',
+                            borderColor: 'rgba(0, 82, 159, 1)',
+                            pointBackgroundColor: 'rgba(0, 82, 159, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(0, 82, 159, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                backdropColor: 'rgba(255,255,255,0)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Yamal Stats Chart
+            const yamalCtx = document.getElementById('yamalStatsChart').getContext('2d');
+            const yamalChart = new Chart(yamalCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Buts', 'Passes D.', 'Dribbles', 'Tirs Cadrés', 'Chances Créées'],
+                    datasets: [
+                        {
+                            label: 'Lamine Yamal 2024/2025',
+                            data: [9, 13, 85, 47, 56],
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.8)'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Mbappé Stats Chart
+            const mbappeCtx = document.getElementById('mbappeStatsChart').getContext('2d');
+            const mbappeChart = new Chart(mbappeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Buts', 'Passes D.', 'Dribbles', 'Tirs Cadrés', 'Chances Créées'],
+                    datasets: [
+                        {
+                            label: 'Kylian Mbappé 2024/2025',
+                            data: [31, 3, 75, 80, 38],
+                            backgroundColor: 'rgba(0, 82, 159, 0.7)',
+                            borderColor: 'rgba(0, 82, 159, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#333'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Highlight active nav link based on scroll position
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            
+            sections.forEach((section) => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach((link) => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
